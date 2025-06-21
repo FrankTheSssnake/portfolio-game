@@ -1,4 +1,5 @@
 use macroquad::prelude::*;
+use crate::map::GameMap;
 
 pub enum PlayerDirection {
     Down,
@@ -23,6 +24,7 @@ impl Player {
         let tex_up = load_texture("assets/characters/player_up.png").await.unwrap();
         let tex_left = load_texture("assets/characters/player_left.png").await.unwrap();
         let tex_right = load_texture("assets/characters/player_right.png").await.unwrap();
+
         Self {
             position: vec2(x, y),
             speed: 100.0,
@@ -34,35 +36,45 @@ impl Player {
         }
     }
 
-    pub fn update(&mut self, delta: f32) {
-        let mut direction = vec2(0.0, 0.0);
+    pub fn update(&mut self, map: &GameMap, delta: f32) {
+        let mut input_dir = vec2(0.0, 0.0);
+
         if is_key_down(KeyCode::W) {
-            direction.y -= 1.0;
+            input_dir.y -= 1.0;
             self.direction = PlayerDirection::Up;
         }
         if is_key_down(KeyCode::S) {
-            direction.y += 1.0;
+            input_dir.y += 1.0;
             self.direction = PlayerDirection::Down;
         }
         if is_key_down(KeyCode::A) {
-            direction.x -= 1.0;
+            input_dir.x -= 1.0;
             self.direction = PlayerDirection::Left;
         }
         if is_key_down(KeyCode::D) {
-            direction.x += 1.0;
+            input_dir.x += 1.0;
             self.direction = PlayerDirection::Right;
         }
-        self.position += direction.normalize_or_zero() * self.speed * delta;
+
+        if input_dir.length() > 0.0 {
+            let movement = input_dir.normalize() * self.speed * delta;
+            let next_pos = self.position + movement;
+
+            // Only update position if walkable
+            if map.is_walkable(next_pos.x, next_pos.y) {
+                self.position = next_pos;
+            }
+        }
     }
 
     pub fn draw(&self) {
-        let tex = match self.direction {
+        let texture = match self.direction {
             PlayerDirection::Down => &self.tex_down,
             PlayerDirection::Up => &self.tex_up,
             PlayerDirection::Left => &self.tex_left,
             PlayerDirection::Right => &self.tex_right,
         };
-        draw_texture(tex, self.position.x - 28.0, self.position.y - 28.0, WHITE);
+
+        draw_texture(texture, self.position.x - 28.0, self.position.y - 28.0, WHITE);
     }
 }
-

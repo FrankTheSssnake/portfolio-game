@@ -12,7 +12,7 @@ enum GameScene {
     Glitch,
 }
 
-#[macroquad::main("Rust Pokémon Portfolio")]
+#[macroquad::main(window_conf)]
 async fn main() {
     let mut scene = GameScene::Island;
 
@@ -28,3 +28,12 @@ async fn main() {
     }
 }
 
+fn window_conf() -> Conf {
+    Conf {
+        window_title: "Portfolio".to_string(),
+        fullscreen: true,
+        window_width: 1920,
+        window_height: 1200,
+        ..Default::default()
+    }
+}
